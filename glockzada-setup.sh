@@ -1,5 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
-
+#
 BASE_DIR="$(pwd)"
 SCRIPTS_DIR="$BASE_DIR/Scripts"
 TUTORIAL_LINK="https://t.me/videoglockzada7"
